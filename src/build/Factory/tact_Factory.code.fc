@@ -1,0 +1,205 @@
+#pragma version =0.4.4;
+#pragma allow-post-modification;
+#pragma compute-asm-ltr;
+
+#include "tact_Factory.headers.fc";
+#include "tact_Factory.stdlib.fc";
+#include "tact_Factory.constants.fc";
+#include "tact_Factory.storage.fc";
+
+;;
+;; Contract Factory functions
+;;
+
+(slice, slice, cell, int) $Factory$_contract_init(slice $treasury) impure inline_ref {
+    var (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount)) = (null(), null(), null(), null());
+    $self'deployer = __tact_context_get_sender();
+    $self'treasury = $treasury;
+    $self'referralsCount = 0;
+    return ($self'deployer, $self'treasury, $self'referrals, $self'referralsCount);
+}
+
+((slice, slice, cell, int), slice) $Factory$_fun_getOrUpdateReferrer((slice, slice, cell, int) $self, slice $user, slice $referrer, int $shouldUpdate) impure inline_ref {
+    var (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount)) = $self;
+    slice $nullAddress = __gen_slice_address_61ab4641fa30d9310391025086eec65d200d79268e1b7cd402565e01ba64be3c();
+    if (( __tact_slice_eq_bits($nullAddress, $user) )) {
+        return (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount), $nullAddress);
+    }
+    if (null?(__tact_dict_get_slice_slice($self'referrals, 267, $user))) {
+        if (($self'referralsCount >= 29999)) {
+            return (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount), $nullAddress);
+        }
+        if ($shouldUpdate) {
+            $self'referrals~__tact_dict_set_slice_slice(267, $user, $referrer);
+            $self'referralsCount = $self'referralsCount + 1;
+        }
+        return (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount), $referrer);
+    }
+    return (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount), __tact_not_null(__tact_dict_get_slice_slice($self'referrals, 267, $user)));
+}
+
+((slice, slice, cell, int), int) $Factory$_fun_balance((slice, slice, cell, int) $self) impure inline_ref {
+    var (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount)) = $self;
+    return (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount), __tact_my_balance());
+}
+
+((slice, slice, cell, int), (cell, cell)) $Factory$_fun_getBondingCurveInit((slice, slice, cell, int) $self, slice $creator, cell $content) impure inline_ref {
+    var (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount)) = $self;
+    return (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount), $BondingCurve$_init_child(__tact_context_sys, $creator, $content));
+}
+
+((slice, slice, cell, int), slice) $Factory$_fun_getReferrer((slice, slice, cell, int) $self, slice $user, slice $referrer) impure inline_ref {
+    var (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount)) = $self;
+    slice $nullAddress = __gen_slice_address_61ab4641fa30d9310391025086eec65d200d79268e1b7cd402565e01ba64be3c();
+    if (( __tact_slice_eq_bits($nullAddress, $user) )) {
+        return (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount), $nullAddress);
+    }
+    if (null?(__tact_dict_get_slice_slice($self'referrals, 267, $user))) {
+        return (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount), $referrer);
+    }
+    return (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount), __tact_not_null(__tact_dict_get_slice_slice($self'referrals, 267, $user)));
+}
+
+;;
+;; Receivers of a Contract Factory
+;;
+
+(((slice, slice, cell, int)), ()) $Factory$_internal_binary_DeployCurveParams((slice, slice, cell, int) $self, (cell) $deployCurveParams) impure inline {
+    var ($self'deployer, $self'treasury, $self'referrals, $self'referralsCount) = $self;
+    var ($deployCurveParams'content) = $deployCurveParams;
+    var ($jettonInit'code, $jettonInit'data) = $BondingCurve$_init_child(__tact_context_sys, __tact_context_get_sender(), $deployCurveParams'content);
+    slice $jettonAddress = $global_contractAddress(($jettonInit'code, $jettonInit'data));
+    $global_send($SendParameters$_constructor_to_value_mode_code_data_body($jettonAddress, 100000000, 3, $jettonInit'code, $jettonInit'data, $Mint$_store_cell($Mint$_constructor_())));
+    $global_emit($CreateEvent$_store_cell($CreateEvent$_constructor_content_jetton_creator($deployCurveParams'content, $jettonAddress, __tact_context_get_sender())));
+    return (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount), ());
+}
+
+(((slice, slice, cell, int)), ()) $Factory$_internal_binary_BuyCall((slice, slice, cell, int) $self, (int, int, slice, slice) $buyCall) impure inline {
+    var ($self'deployer, $self'treasury, $self'referrals, $self'referralsCount) = $self;
+    var ($buyCall'tonAmount, $buyCall'minOut, $buyCall'referrer, $buyCall'jetton) = $buyCall;
+    throw_unless(1039, ( ~ __tact_slice_eq_bits($buyCall'referrer, __tact_context_get_sender()) ));
+    slice $referrer = ($self'deployer, $self'treasury, $self'referrals, $self'referralsCount)~$Factory$_fun_getOrUpdateReferrer(__tact_context_get_sender(), $buyCall'referrer, true);
+    slice $referrerDl1 = ($self'deployer, $self'treasury, $self'referrals, $self'referralsCount)~$Factory$_fun_getOrUpdateReferrer($referrer, __gen_slice_address_61ab4641fa30d9310391025086eec65d200d79268e1b7cd402565e01ba64be3c(), false);
+    slice $referrerDl2 = ($self'deployer, $self'treasury, $self'referrals, $self'referralsCount)~$Factory$_fun_getOrUpdateReferrer($referrerDl1, __gen_slice_address_61ab4641fa30d9310391025086eec65d200d79268e1b7cd402565e01ba64be3c(), false);
+    $global_send($SendParameters$_constructor_to_value_mode_body($buyCall'jetton, 0, 66, $Buy$_store_cell($Buy$_constructor_tonAmount_minOut_referrer_referrerDl1_referrerDl2_treasury_trader($buyCall'tonAmount, $buyCall'minOut, $referrer, $referrerDl1, $referrerDl2, $self'treasury, __tact_context_get_sender()))));
+    return (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount), ());
+}
+
+(((slice, slice, cell, int)), ()) $Factory$_internal_binary_SellCall((slice, slice, cell, int) $self, (slice, slice, int, int) $sellCall) impure inline {
+    var ($self'deployer, $self'treasury, $self'referrals, $self'referralsCount) = $self;
+    var ($sellCall'referrer, $sellCall'jetton, $sellCall'jettonAmount, $sellCall'minTonOut) = $sellCall;
+    throw_unless(1039, ( ~ __tact_slice_eq_bits($sellCall'referrer, __tact_context_get_sender()) ));
+    slice $referrer = ($self'deployer, $self'treasury, $self'referrals, $self'referralsCount)~$Factory$_fun_getOrUpdateReferrer(__tact_context_get_sender(), $sellCall'referrer, true);
+    slice $referrerDl1 = ($self'deployer, $self'treasury, $self'referrals, $self'referralsCount)~$Factory$_fun_getOrUpdateReferrer($referrer, __gen_slice_address_61ab4641fa30d9310391025086eec65d200d79268e1b7cd402565e01ba64be3c(), false);
+    slice $referrerDl2 = ($self'deployer, $self'treasury, $self'referrals, $self'referralsCount)~$Factory$_fun_getOrUpdateReferrer($referrerDl1, __gen_slice_address_61ab4641fa30d9310391025086eec65d200d79268e1b7cd402565e01ba64be3c(), false);
+    $global_send($SendParameters$_constructor_to_value_mode_body($sellCall'jetton, 0, 66, $Sell$_store_cell($Sell$_constructor_jettonAmount_minTonOut_referrer_referrerDl1_referrerDl2_treasury_trader($sellCall'jettonAmount, $sellCall'minTonOut, $referrer, $referrerDl1, $referrerDl2, $self'treasury, __tact_context_get_sender()))));
+    return (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount), ());
+}
+
+(((slice, slice, cell, int)), ()) $Factory$_internal_binary_Deploy((slice, slice, cell, int) $self, (int) $deploy) impure inline {
+    var ($self'deployer, $self'treasury, $self'referrals, $self'referralsCount) = $self;
+    var ($deploy'queryId) = $deploy;
+    ($self'deployer, $self'treasury, $self'referrals, $self'referralsCount)~$Factory$_fun_notify($DeployOk$_store_cell($DeployOk$_constructor_queryId($deploy'queryId)));
+    return (($self'deployer, $self'treasury, $self'referrals, $self'referralsCount), ());
+}
+
+;;
+;; Get methods of a Contract Factory
+;;
+
+_ %balance() method_id(104128) {
+    var self = $Factory$_contract_load();
+    var res = self~$Factory$_fun_balance();
+    return res;
+}
+
+_ %getBondingCurveInit(slice $creator, cell $content) method_id(115473) {
+    slice $creator = __tact_verify_address($creator);
+    cell $content = $content;
+    var self = $Factory$_contract_load();
+    var res = self~$Factory$_fun_getBondingCurveInit($creator, $content);
+    return $StateInit$_to_external(res);
+}
+
+_ %getReferrer(slice $user, slice $referrer) method_id(109619) {
+    slice $user = __tact_verify_address($user);
+    slice $referrer = __tact_verify_address($referrer);
+    var self = $Factory$_contract_load();
+    var res = self~$Factory$_fun_getReferrer($user, $referrer);
+    return res;
+}
+
+_ lazy_deployment_completed() method_id {
+    return get_data().begin_parse().load_int(1);
+}
+
+;;
+;; Routing of a Contract Factory
+;;
+
+((slice, slice, cell, int), int) $Factory$_contract_router_internal((slice, slice, cell, int) self, int msg_bounced, slice in_msg) impure inline_ref {
+    ;; Handle bounced messages
+    if (msg_bounced) {
+        return (self, true);
+    }
+    
+    ;; Parse incoming message
+    int op = 0;
+    if (slice_bits(in_msg) >= 32) {
+        op = in_msg.preload_uint(32);
+    }
+    
+    
+    ;; Receive DeployCurveParams message
+    if (op == 5444227) {
+        var msg = in_msg~$DeployCurveParams$_load();
+        self~$Factory$_internal_binary_DeployCurveParams(msg);
+        return (self, true);
+    }
+    
+    ;; Receive BuyCall message
+    if (op == 2899486129) {
+        var msg = in_msg~$BuyCall$_load();
+        self~$Factory$_internal_binary_BuyCall(msg);
+        return (self, true);
+    }
+    
+    ;; Receive SellCall message
+    if (op == 3845534568) {
+        var msg = in_msg~$SellCall$_load();
+        self~$Factory$_internal_binary_SellCall(msg);
+        return (self, true);
+    }
+    
+    ;; Receive Deploy message
+    if (op == 2490013878) {
+        var msg = in_msg~$Deploy$_load();
+        self~$Factory$_internal_binary_Deploy(msg);
+        return (self, true);
+    }
+    
+    return (self, false);
+}
+
+() recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
+    
+    ;; Context
+    var cs = in_msg_cell.begin_parse();
+    var msg_flags = cs~load_uint(4);
+    var msg_bounced = -(msg_flags & 1);
+    slice msg_sender_addr = __tact_verify_address(cs~load_msg_addr());
+    __tact_context = (msg_bounced, msg_sender_addr, msg_value, cs);
+    __tact_context_sender = msg_sender_addr;
+    
+    ;; Load contract data
+    var self = $Factory$_contract_load();
+    
+    ;; Handle operation
+    int handled = self~$Factory$_contract_router_internal(msg_bounced, in_msg);
+    
+    ;; Throw if not handled
+    throw_unless(130, handled);
+    
+    ;; Persist state
+    $Factory$_contract_store(self);
+}

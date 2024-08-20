@@ -1,0 +1,286 @@
+;;
+;; Header files for BondingCurve
+;; NOTE: declarations are sorted for optimal order
+;;
+
+;; __tact_verify_address
+slice __tact_verify_address(slice address) impure inline;
+
+;; __tact_load_address
+(slice, slice) __tact_load_address(slice cs) inline;
+
+;; __tact_load_address_opt
+(slice, slice) __tact_load_address_opt(slice cs) inline;
+
+;; __tact_store_address
+builder __tact_store_address(builder b, slice address) inline;
+
+;; __tact_store_address_opt
+builder __tact_store_address_opt(builder b, slice address) inline;
+
+;; __tact_create_address
+slice __tact_create_address(int chain, int hash) inline;
+
+;; __tact_compute_contract_address
+slice __tact_compute_contract_address(int chain, cell code, cell data) inline;
+
+;; __tact_my_balance
+int __tact_my_balance() inline;
+
+;; __tact_not_null
+forall X -> X __tact_not_null(X x) impure inline;
+
+;; __tact_context_get
+(int, slice, int, slice) __tact_context_get() inline;
+
+;; __tact_context_get_sender
+slice __tact_context_get_sender() inline;
+
+;; __tact_store_bool
+builder __tact_store_bool(builder b, int v) inline;
+
+;; __tact_dict_set_slice_int
+(cell, ()) __tact_dict_set_slice_int(cell d, int kl, slice k, int v, int vl) inline;
+
+;; __tact_dict_get_slice_int
+int __tact_dict_get_slice_int(cell d, int kl, slice k, int vl) inline;
+
+;; __tact_slice_eq_bits
+int __tact_slice_eq_bits(slice a, slice b) inline;
+
+;; __tact_dict_set_code
+cell __tact_dict_set_code(cell dict, int id, cell code) inline;
+
+;; __tact_dict_get_code
+cell __tact_dict_get_code(cell dict, int id) inline;
+
+;; $TokenTransfer$_store
+builder $TokenTransfer$_store(builder build_0, (int, int, slice, slice, cell, int, slice) v) inline_ref;
+
+;; $TokenTransfer$_store_cell
+cell $TokenTransfer$_store_cell((int, int, slice, slice, cell, int, slice) v) inline;
+
+;; $TokenTransferInternal$_store
+builder $TokenTransferInternal$_store(builder build_0, (int, int, slice, slice, int, slice) v) inline_ref;
+
+;; $TokenTransferInternal$_store_cell
+cell $TokenTransferInternal$_store_cell((int, int, slice, slice, int, slice) v) inline;
+
+;; $TokenNotification$_load
+(slice, ((int, int, slice, slice))) $TokenNotification$_load(slice sc_0) inline;
+
+;; $TokenBurnNotification$_load
+(slice, ((int, int, slice, slice))) $TokenBurnNotification$_load(slice sc_0) inline;
+
+;; $TokenExcesses$_store
+builder $TokenExcesses$_store(builder build_0, (int) v) inline;
+
+;; $TokenExcesses$_store_cell
+cell $TokenExcesses$_store_cell((int) v) inline;
+
+;; $Mint$_load
+(slice, (tuple)) $Mint$_load(slice sc_0) inline;
+
+;; $ProvideWalletAddress$_load
+(slice, ((int, slice, int))) $ProvideWalletAddress$_load(slice sc_0) inline;
+
+;; $TakeWalletAddress$_store
+builder $TakeWalletAddress$_store(builder build_0, (int, slice, slice) v) inline;
+
+;; $TakeWalletAddress$_store_cell
+cell $TakeWalletAddress$_store_cell((int, slice, slice) v) inline;
+
+;; $Buy$_load
+(slice, ((int, int, slice, slice, slice, slice, slice))) $Buy$_load(slice sc_0) inline_ref;
+
+;; $Sell$_load
+(slice, ((slice, slice, slice, slice, int, int, slice))) $Sell$_load(slice sc_0) inline_ref;
+
+;; $ClaimToken$_load
+(slice, ((slice))) $ClaimToken$_load(slice sc_0) inline;
+
+;; $CompleteEvent$_store
+builder $CompleteEvent$_store(builder build_0, (slice) v) inline;
+
+;; $CompleteEvent$_store_cell
+cell $CompleteEvent$_store_cell((slice) v) inline;
+
+;; $TradeEvent$_store
+builder $TradeEvent$_store(builder build_0, (int, int, slice, int, int, slice, int, int) v) inline_ref;
+
+;; $TradeEvent$_store_cell
+cell $TradeEvent$_store_cell((int, int, slice, int, int, slice, int, int) v) inline;
+
+;; $ClaimEvent$_store
+builder $ClaimEvent$_store(builder build_0, (slice, slice, int) v) inline;
+
+;; $ClaimEvent$_store_cell
+cell $ClaimEvent$_store_cell((slice, slice, int) v) inline;
+
+;; $BondingCurve$_store
+builder $BondingCurve$_store(builder build_0, (int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) v) inline;
+
+;; $BondingCurve$_load
+(slice, ((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice))) $BondingCurve$_load(slice sc_0) inline;
+
+;; $StateInit$_get_code
+_ $StateInit$_get_code((cell, cell) v) inline;
+
+;; $Context$_get_value
+_ $Context$_get_value((int, slice, int, slice) v) inline;
+
+;; $JettonData$_to_tuple
+tuple $JettonData$_to_tuple(((int, int, slice, cell, cell)) v) inline;
+
+;; $JettonData$_to_external
+tuple $JettonData$_to_external(((int, int, slice, cell, cell)) v) inline;
+
+;; $BondingCurveData$_to_tuple
+tuple $BondingCurveData$_to_tuple(((int, int, int, int, slice, int, slice)) v) inline;
+
+;; $BondingCurveData$_to_external
+tuple $BondingCurveData$_to_external(((int, int, int, int, slice, int, slice)) v) inline;
+
+;; $OutputTokenAmountReturn$_to_tuple
+tuple $OutputTokenAmountReturn$_to_tuple(((int, int, int)) v) inline;
+
+;; $OutputTokenAmountReturn$_to_external
+tuple $OutputTokenAmountReturn$_to_external(((int, int, int)) v) inline;
+
+;; $OutputTonAmountReturn$_to_tuple
+tuple $OutputTonAmountReturn$_to_tuple(((int, int)) v) inline;
+
+;; $OutputTonAmountReturn$_to_external
+tuple $OutputTonAmountReturn$_to_external(((int, int)) v) inline;
+
+;; $JettonDefaultWallet$init$_store
+builder $JettonDefaultWallet$init$_store(builder build_0, (slice, slice) v) inline;
+
+;; $BondingCurve$init$_load
+(slice, ((slice, cell))) $BondingCurve$init$_load(slice sc_0) inline;
+
+;; $Factory$init$_store
+builder $Factory$init$_store(builder build_0, (slice) v) inline;
+
+;; $Factory$_init_child
+(cell, cell) $Factory$_init_child(cell sys', slice $treasury) inline_ref;
+
+;; $global_contractAddress
+slice $global_contractAddress((cell, cell) $s) impure inline;
+
+;; $BondingCurve$_contract_init
+(int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $BondingCurve$_contract_init(slice $jettonCreator, cell $content) impure inline_ref;
+
+;; $BondingCurve$_contract_load
+(int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $BondingCurve$_contract_load() impure inline_ref;
+
+;; $BondingCurve$_contract_store
+() $BondingCurve$_contract_store((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) v) impure inline;
+
+;; $global_emptyCell
+cell $global_emptyCell() impure inline;
+
+;; $Cell$_fun_asSlice
+slice $Cell$_fun_asSlice(cell $self) impure inline;
+
+;; $global_emptySlice
+slice $global_emptySlice() impure inline;
+
+;; $global_send
+() $global_send((int, slice, int, int, cell, cell, cell) $params) impure inline_ref;
+
+;; $global_emit
+() $global_emit(cell $body) impure inline;
+
+;; $OutputTokenAmountReturn$_constructor_amountOut_tax_remainNativeAmount
+((int, int, int)) $OutputTokenAmountReturn$_constructor_amountOut_tax_remainNativeAmount(int $amountOut, int $tax, int $remainNativeAmount) inline;
+
+;; $global_getOutputTokenAmount_
+(int, int, int) $global_getOutputTokenAmount_(int $inputTonAmount, int $virtualTonReserve, int $virtualTokenReserve) impure inline_ref;
+
+;; $OutputTonAmountReturn$_constructor_amountOut_tax
+((int, int)) $OutputTonAmountReturn$_constructor_amountOut_tax(int $amountOut, int $tax) inline;
+
+;; $global_getOutputTonAmount_
+(int, int) $global_getOutputTonAmount_(int $inputTokenAmount, int $virtualTonReserve, int $virtualTokenReserve) impure inline_ref;
+
+;; $JettonDefaultWallet$_init_child
+(cell, cell) $JettonDefaultWallet$_init_child(cell sys', slice $master, slice $owner) inline_ref;
+
+;; $BondingCurve$_fun_balance
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), int) $BondingCurve$_fun_balance((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self) impure inline_ref;
+
+;; $SendParameters$_constructor_to_value_mode_bounce_body
+((int, slice, int, int, cell, cell, cell)) $SendParameters$_constructor_to_value_mode_bounce_body(slice $to, int $value, int $mode, int $bounce, cell $body) inline;
+
+;; $BondingCurve$_fun_handlePaymentsForFee
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), ()) $BondingCurve$_fun_handlePaymentsForFee((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, int $fee, slice $treasury, slice $referrer, slice $referrerDl1, slice $referrerDl2) impure inline_ref;
+
+;; $BondingCurveData$_constructor_virtualTonReserve_virtualTokenReserve_complete_liquidityAdded_jettonCreator_tokenDebt_myJettonWalletAddress
+((int, int, int, int, slice, int, slice)) $BondingCurveData$_constructor_virtualTonReserve_virtualTokenReserve_complete_liquidityAdded_jettonCreator_tokenDebt_myJettonWalletAddress(int $virtualTonReserve, int $virtualTokenReserve, int $complete, int $liquidityAdded, slice $jettonCreator, int $tokenDebt, slice $myJettonWalletAddress) inline;
+
+;; $BondingCurve$_fun_bondingCurveData
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), (int, int, int, int, slice, int, slice)) $BondingCurve$_fun_bondingCurveData((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self) impure inline_ref;
+
+;; $BondingCurve$_fun_outputTokenAmount
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), (int, int, int)) $BondingCurve$_fun_outputTokenAmount((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, int $inputTonAmount) impure inline_ref;
+
+;; $BondingCurve$_fun_outputTonAmount
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), (int, int)) $BondingCurve$_fun_outputTonAmount((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, int $inputTokenAmount) impure inline_ref;
+
+;; $BondingCurve$_fun_boughtBalance
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), int) $BondingCurve$_fun_boughtBalance((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, slice $address) impure inline_ref;
+
+;; $SendParameters$_constructor_to_value_bounce_mode_body_code_data
+((int, slice, int, int, cell, cell, cell)) $SendParameters$_constructor_to_value_bounce_mode_body_code_data(slice $to, int $value, int $bounce, int $mode, cell $body, cell $code, cell $data) inline;
+
+;; $TokenTransferInternal$_constructor_query_id_amount_from_response_destination_forward_ton_amount_forward_payload
+((int, int, slice, slice, int, slice)) $TokenTransferInternal$_constructor_query_id_amount_from_response_destination_forward_ton_amount_forward_payload(int $query_id, int $amount, slice $from, slice $response_destination, int $forward_ton_amount, slice $forward_payload) inline;
+
+;; $BondingCurve$_fun_getJettonWalletInit
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), (cell, cell)) $BondingCurve$_fun_getJettonWalletInit((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, slice $address) impure inline_ref;
+
+;; $BondingCurve$_fun_mint
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), ()) $BondingCurve$_fun_mint((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, slice $to, int $amount, slice $response_destination) impure inline_ref;
+
+;; $BondingCurve$_fun_requireSenderAsWalletOwner
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), ()) $BondingCurve$_fun_requireSenderAsWalletOwner((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, slice $owner) impure inline_ref;
+
+;; $JettonData$_constructor_total_supply_mintable_owner_content_wallet_code
+((int, int, slice, cell, cell)) $JettonData$_constructor_total_supply_mintable_owner_content_wallet_code(int $total_supply, int $mintable, slice $owner, cell $content, cell $wallet_code) inline;
+
+;; $BondingCurve$_fun_get_jetton_data
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), (int, int, slice, cell, cell)) $BondingCurve$_fun_get_jetton_data((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self) impure inline_ref;
+
+;; $BondingCurve$_fun_get_wallet_address
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), slice) $BondingCurve$_fun_get_wallet_address((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, slice $owner) impure inline_ref;
+
+;; $BondingCurve$_fun_owner
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), slice) $BondingCurve$_fun_owner((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self) impure inline_ref;
+
+;; $TradeEvent$_constructor_tonAmount_jettonAmount_jetton_virtualTonReserve_virtualTokenReserve_trader_isBuy_balance
+((int, int, slice, int, int, slice, int, int)) $TradeEvent$_constructor_tonAmount_jettonAmount_jetton_virtualTonReserve_virtualTokenReserve_trader_isBuy_balance(int $tonAmount, int $jettonAmount, slice $jetton, int $virtualTonReserve, int $virtualTokenReserve, slice $trader, int $isBuy, int $balance) inline;
+
+;; $CompleteEvent$_constructor_jetton
+((slice)) $CompleteEvent$_constructor_jetton(slice $jetton) inline;
+
+;; $SendParameters$_constructor_to_value_mode
+((int, slice, int, int, cell, cell, cell)) $SendParameters$_constructor_to_value_mode(slice $to, int $value, int $mode) inline;
+
+;; $SendParameters$_constructor_to_value_bounce_mode_body
+((int, slice, int, int, cell, cell, cell)) $SendParameters$_constructor_to_value_bounce_mode_body(slice $to, int $value, int $bounce, int $mode, cell $body) inline;
+
+;; $TokenTransfer$_constructor_query_id_amount_destination_response_destination_custom_payload_forward_ton_amount_forward_payload
+((int, int, slice, slice, cell, int, slice)) $TokenTransfer$_constructor_query_id_amount_destination_response_destination_custom_payload_forward_ton_amount_forward_payload(int $query_id, int $amount, slice $destination, slice $response_destination, cell $custom_payload, int $forward_ton_amount, slice $forward_payload) inline;
+
+;; $ClaimEvent$_constructor_jetton_user_balance
+((slice, slice, int)) $ClaimEvent$_constructor_jetton_user_balance(slice $jetton, slice $user, int $balance) inline;
+
+;; $TokenExcesses$_constructor_query_id
+((int)) $TokenExcesses$_constructor_query_id(int $query_id) inline;
+
+;; $SendParameters$_constructor_to_value_mode_body
+((int, slice, int, int, cell, cell, cell)) $SendParameters$_constructor_to_value_mode_body(slice $to, int $value, int $mode, cell $body) inline;
+
+;; $TakeWalletAddress$_constructor_query_id_wallet_address_owner_address
+((int, slice, slice)) $TakeWalletAddress$_constructor_query_id_wallet_address_owner_address(int $query_id, slice $wallet_address, slice $owner_address) inline;

@@ -1,0 +1,435 @@
+#pragma version =0.4.4;
+#pragma allow-post-modification;
+#pragma compute-asm-ltr;
+
+#include "tact_BondingCurve.headers.fc";
+#include "tact_BondingCurve.stdlib.fc";
+#include "tact_BondingCurve.constants.fc";
+#include "tact_BondingCurve.storage.fc";
+
+;;
+;; Contract BondingCurve functions
+;;
+
+(int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $BondingCurve$_contract_init(slice $jettonCreator, cell $content) impure inline_ref {
+    var (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)) = (null(), null(), null(), null(), null(), null(), null(), null(), null(), null(), null(), null(), null(), null());
+    $self'virtualTonReserve = 29000000000;
+    $self'virtualTokenReserve = 450660000000000000000;
+    $self'complete = false;
+    $self'liquidityAdded = false;
+    var ($init'code, $init'data) = $Factory$_init_child(__tact_context_sys, __gen_slice_address_f6236162970931c5c981c2d512544b20a12ba8626fbe165ee381394882cdcc8c());
+    slice $factory = $global_contractAddress(($init'code, $init'data));
+    $self'factory = $factory;
+    $self'tokenDebt = 0;
+    $self'jettonCreator = $jettonCreator;
+    $self'total_supply = 0;
+    $self'owner = __gen_slice_address_61ab4641fa30d9310391025086eec65d200d79268e1b7cd402565e01ba64be3c();
+    $self'myJettonWalletAddress = __gen_slice_address_61ab4641fa30d9310391025086eec65d200d79268e1b7cd402565e01ba64be3c();
+    $self'mintable = true;
+    $self'content = $content;
+    $self'max_supply = 420000000000000000000;
+    return ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress);
+}
+
+(int, int, int) $global_getOutputTokenAmount_(int $inputTonAmount, int $virtualTonReserve, int $virtualTokenReserve) impure inline_ref {
+    int $tax = (($inputTonAmount * 100) / 10000);
+    int $amountBuy = ($inputTonAmount - $tax);
+    int $virtualTokenReserveAfter = (($virtualTonReserve * $virtualTokenReserve) / ($virtualTonReserve + $amountBuy));
+    if ((($virtualTokenReserveAfter * ($virtualTonReserve + $amountBuy)) < ($virtualTonReserve * $virtualTokenReserve))) {
+        $virtualTokenReserveAfter = $virtualTokenReserveAfter + 1;
+    }
+    int $amountOut = 0;
+    int $remainNativeAmount = 0;
+    if (($virtualTokenReserveAfter < 117550000000000000000)) {
+        $amountOut = ($virtualTokenReserve - 117550000000000000000);
+        int $virtualTonReserveAfter = (($virtualTonReserve * $virtualTokenReserve) / 117550000000000000000);
+        if ((($virtualTonReserveAfter * 117550000000000000000) < ($virtualTonReserve * $virtualTokenReserve))) {
+            $virtualTonReserveAfter = $virtualTonReserveAfter + 1;
+        }
+        $amountBuy = ($virtualTonReserveAfter - $virtualTonReserve);
+        $tax = (($amountBuy * 100) / 9900);
+        $remainNativeAmount = (($inputTonAmount - $amountBuy) - $tax);
+    } else {
+        $amountOut = ($virtualTokenReserve - $virtualTokenReserveAfter);
+    }
+    return $OutputTokenAmountReturn$_constructor_amountOut_tax_remainNativeAmount($amountOut, $tax, $remainNativeAmount);
+}
+
+(int, int) $global_getOutputTonAmount_(int $inputTokenAmount, int $virtualTonReserve, int $virtualTokenReserve) impure inline_ref {
+    int $virtualTonReserveAfter = (($virtualTonReserve * $virtualTokenReserve) / ($virtualTokenReserve + $inputTokenAmount));
+    if ((($virtualTonReserveAfter * ($virtualTokenReserve + $inputTokenAmount)) < ($virtualTonReserve * $virtualTokenReserve))) {
+        $virtualTonReserveAfter = $virtualTonReserveAfter + 1;
+    }
+    int $outBeforeTax = ($virtualTonReserve - $virtualTonReserveAfter);
+    int $tax = (($outBeforeTax * 100) / 10000);
+    return $OutputTonAmountReturn$_constructor_amountOut_tax(($outBeforeTax - $tax), $tax);
+}
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), int) $BondingCurve$_fun_balance((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self) impure inline_ref {
+    var (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)) = $self;
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), __tact_my_balance());
+}
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), ()) $BondingCurve$_fun_handlePaymentsForFee((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, int $fee, slice $treasury, slice $referrer, slice $referrerDl1, slice $referrerDl2) impure inline_ref {
+    var (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)) = $self;
+    int $tokenCreatorFee = (($fee * 10) / 100);
+    $global_send($SendParameters$_constructor_to_value_mode_bounce_body($self'jettonCreator, $tokenCreatorFee, 3, false, __gen_cell_comment_12402b9b6082059d45ef99f00f39794b05564c775667fcb97b3f184038a89a60()));
+    int $remainingFee = ($fee - $tokenCreatorFee);
+    slice $nullAddress = __gen_slice_address_61ab4641fa30d9310391025086eec65d200d79268e1b7cd402565e01ba64be3c();
+    if (( ~ __tact_slice_eq_bits($nullAddress, $referrer) )) {
+        $global_send($SendParameters$_constructor_to_value_mode_bounce_body($referrer, (($fee * 15) / 100), 3, false, __gen_cell_comment_ce4dafe2796aa89ee97427de4e0602a89d574e32ad215597968ad5dcde415587()));
+        $remainingFee = $remainingFee - (($fee * 15) / 100);
+    }
+    if (( ~ __tact_slice_eq_bits($nullAddress, $referrerDl1) )) {
+        $global_send($SendParameters$_constructor_to_value_mode_bounce_body($referrerDl1, (($fee * 5) / 100), 3, false, __gen_cell_comment_3a6cd95a26070b051049e6d532c36f8999149dd318833ff8f6f349387b8aec45()));
+        $remainingFee = $remainingFee - (($fee * 5) / 100);
+    }
+    if (( ~ __tact_slice_eq_bits($nullAddress, $referrerDl2) )) {
+        $global_send($SendParameters$_constructor_to_value_mode_bounce_body($referrerDl2, (($fee * 5) / 100), 3, false, __gen_cell_comment_5cfc34bfdaee12755c82828a50eb87cfb8230fdbc2e6f6ef73cb56a3f9787de8()));
+        $remainingFee = $remainingFee - (($fee * 5) / 100);
+    }
+    $global_send($SendParameters$_constructor_to_value_mode_bounce_body($treasury, $remainingFee, 3, false, __gen_cell_comment_3fe93897158698e4d473b74414d7493716b0fc3a70310934873f0019daaccab4()));
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), ());
+}
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), (int, int, int, int, slice, int, slice)) $BondingCurve$_fun_bondingCurveData((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self) impure inline_ref {
+    var (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)) = $self;
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), $BondingCurveData$_constructor_virtualTonReserve_virtualTokenReserve_complete_liquidityAdded_jettonCreator_tokenDebt_myJettonWalletAddress($self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress));
+}
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), (int, int, int)) $BondingCurve$_fun_outputTokenAmount((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, int $inputTonAmount) impure inline_ref {
+    var (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)) = $self;
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), $global_getOutputTokenAmount_($inputTonAmount, $self'virtualTonReserve, $self'virtualTokenReserve));
+}
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), (int, int)) $BondingCurve$_fun_outputTonAmount((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, int $inputTokenAmount) impure inline_ref {
+    var (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)) = $self;
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), $global_getOutputTonAmount_($inputTokenAmount, $self'virtualTonReserve, $self'virtualTokenReserve));
+}
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), int) $BondingCurve$_fun_boughtBalance((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, slice $address) impure inline_ref {
+    var (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)) = $self;
+    if (null?(__tact_dict_get_slice_int($self'balances, 267, $address, 257))) {
+        return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), 0);
+    }
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), __tact_not_null(__tact_dict_get_slice_int($self'balances, 267, $address, 257)));
+}
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), (cell, cell)) $BondingCurve$_fun_getJettonWalletInit((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, slice $address) impure inline_ref {
+    var (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)) = $self;
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), $JettonDefaultWallet$_init_child(__tact_context_sys, my_address(), $address));
+}
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), ()) $BondingCurve$_fun_mint((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, slice $to, int $amount, slice $response_destination) impure inline_ref {
+    var (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)) = $self;
+    throw_unless(18668, $self'mintable);
+    $self'total_supply = ($self'total_supply + $amount);
+    var ($winit'code, $winit'data) = ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)~$BondingCurve$_fun_getJettonWalletInit($to);
+    $global_send($SendParameters$_constructor_to_value_bounce_mode_body_code_data($global_contractAddress(($winit'code, $winit'data)), 0, true, 64, $TokenTransferInternal$_store_cell($TokenTransferInternal$_constructor_query_id_amount_from_response_destination_forward_ton_amount_forward_payload(0, $amount, my_address(), $response_destination, 0, $Cell$_fun_asSlice(end_cell(begin_cell())))), $winit'code, $winit'data));
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), ());
+}
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), ()) $BondingCurve$_fun_requireSenderAsWalletOwner((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, slice $owner) impure inline_ref {
+    var (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)) = $self;
+    var ($ctx'bounced, $ctx'sender, $ctx'value, $ctx'raw) = __tact_context_get();
+    var ($winit'code, $winit'data) = ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)~$BondingCurve$_fun_getJettonWalletInit($owner);
+    throw_unless(4429, ( __tact_slice_eq_bits($ctx'sender, $global_contractAddress(($winit'code, $winit'data))) ));
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), ());
+}
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), (int, int, slice, cell, cell)) $BondingCurve$_fun_get_jetton_data((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self) impure inline_ref {
+    var (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)) = $self;
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), $JettonData$_constructor_total_supply_mintable_owner_content_wallet_code($self'total_supply, $self'mintable, $self'owner, $self'content, $StateInit$_get_code($JettonDefaultWallet$_init_child(__tact_context_sys, my_address(), $self'owner))));
+}
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), slice) $BondingCurve$_fun_get_wallet_address((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, slice $owner) impure inline_ref {
+    var (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)) = $self;
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), $global_contractAddress($JettonDefaultWallet$_init_child(__tact_context_sys, my_address(), $owner)));
+}
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), slice) $BondingCurve$_fun_owner((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self) impure inline_ref {
+    var (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)) = $self;
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), $self'owner);
+}
+
+;;
+;; Receivers of a Contract BondingCurve
+;;
+
+(((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice)), ()) $BondingCurve$_internal_binary_Mint((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, tuple $_) impure inline {
+    var ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress) = $self;
+    var $_ = $_;
+    throw_unless(41223, ( __tact_slice_eq_bits($self'factory, __tact_context_get_sender()) ));
+    ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)~$BondingCurve$_fun_mint(my_address(), $self'max_supply, my_address());
+    $self'mintable = false;
+    var ($myJettonWalletInit'code, $myJettonWalletInit'data) = ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)~$BondingCurve$_fun_getJettonWalletInit(my_address());
+    slice $myJettonWalletAddress = $global_contractAddress(($myJettonWalletInit'code, $myJettonWalletInit'data));
+    $self'myJettonWalletAddress = $myJettonWalletAddress;
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), ());
+}
+
+(((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice)), ()) $BondingCurve$_internal_binary_Buy((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, (int, int, slice, slice, slice, slice, slice) $buy) impure inline {
+    var ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress) = $self;
+    var ($buy'tonAmount, $buy'minOut, $buy'referrer, $buy'referrerDl1, $buy'referrerDl2, $buy'treasury, $buy'trader) = $buy;
+    throw_unless(8685, (~ $self'complete));
+    throw_unless(2944, ( __tact_slice_eq_bits($self'factory, __tact_context_get_sender()) ));
+    throw_unless(58268, ($Context$_get_value(__tact_context_get()) > $buy'tonAmount));
+    throw_unless(33172, ( (($buy'tonAmount > 0)) ? (($buy'tonAmount <= ($Context$_get_value(__tact_context_get()) - 20000000))) : (false) ));
+    var ($outputData'amountOut, $outputData'tax, $outputData'remainNativeAmount) = $global_getOutputTokenAmount_($buy'tonAmount, $self'virtualTonReserve, $self'virtualTokenReserve);
+    throw_unless(34744, ($outputData'amountOut >= $buy'minOut));
+    int $currentBalance = 0;
+    if ((~ null?(__tact_dict_get_slice_int($self'balances, 267, $buy'trader, 257)))) {
+        $currentBalance = __tact_not_null(__tact_dict_get_slice_int($self'balances, 267, $buy'trader, 257));
+    }
+    $self'balances~__tact_dict_set_slice_int(267, $buy'trader, ($currentBalance + $outputData'amountOut), 257);
+    $self'tokenDebt = $self'tokenDebt + $outputData'amountOut;
+    $self'virtualTonReserve = $self'virtualTonReserve + (($buy'tonAmount - $outputData'tax) - $outputData'remainNativeAmount);
+    $self'virtualTokenReserve = $self'virtualTokenReserve - $outputData'amountOut;
+    $global_emit($TradeEvent$_store_cell($TradeEvent$_constructor_tonAmount_jettonAmount_jetton_virtualTonReserve_virtualTokenReserve_trader_isBuy_balance((($buy'tonAmount - $outputData'tax) - $outputData'remainNativeAmount), $outputData'amountOut, my_address(), $self'virtualTonReserve, $self'virtualTokenReserve, $buy'trader, true, ($currentBalance + $outputData'amountOut))));
+    if (($self'virtualTokenReserve <= 117550000000000000000)) {
+        $self'complete = true;
+        $global_emit($CompleteEvent$_store_cell($CompleteEvent$_constructor_jetton(my_address())));
+    }
+    ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)~$BondingCurve$_fun_handlePaymentsForFee($outputData'tax, $buy'treasury, $buy'referrer, $buy'referrerDl1, $buy'referrerDl2);
+    if (($outputData'remainNativeAmount > 0)) {
+        $global_send($SendParameters$_constructor_to_value_mode($buy'trader, $outputData'remainNativeAmount, 3));
+    }
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), ());
+}
+
+(((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice)), ()) $BondingCurve$_internal_binary_Sell((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, (slice, slice, slice, slice, int, int, slice) $sell) impure inline {
+    var ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress) = $self;
+    var ($sell'referrerDl1, $sell'referrerDl2, $sell'treasury, $sell'trader, $sell'jettonAmount, $sell'minTonOut, $sell'referrer) = $sell;
+    throw_unless(8685, (~ $self'complete));
+    throw_unless(2944, ( __tact_slice_eq_bits($self'factory, __tact_context_get_sender()) ));
+    throw_unless(33172, ( (($sell'jettonAmount > 0)) ? (($Context$_get_value(__tact_context_get()) >= 20000000)) : (false) ));
+    throw_unless(16266, (~ null?(__tact_dict_get_slice_int($self'balances, 267, $sell'trader, 257))));
+    int $currentBalance = __tact_not_null(__tact_dict_get_slice_int($self'balances, 267, $sell'trader, 257));
+    throw_unless(16266, ($currentBalance >= $sell'jettonAmount));
+    var ($outputData'amountOut, $outputData'tax) = $global_getOutputTonAmount_($sell'jettonAmount, $self'virtualTonReserve, $self'virtualTokenReserve);
+    throw_unless(34744, ($outputData'amountOut >= $sell'minTonOut));
+    $self'balances~__tact_dict_set_slice_int(267, $sell'trader, ($currentBalance - $sell'jettonAmount), 257);
+    $self'tokenDebt = $self'tokenDebt - $sell'jettonAmount;
+    ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)~$BondingCurve$_fun_handlePaymentsForFee($outputData'tax, $sell'treasury, $sell'referrer, $sell'referrerDl1, $sell'referrerDl2);
+    $self'virtualTonReserve = $self'virtualTonReserve - ($outputData'amountOut + $outputData'tax);
+    $self'virtualTokenReserve = $self'virtualTokenReserve + $sell'jettonAmount;
+    $global_emit($TradeEvent$_store_cell($TradeEvent$_constructor_tonAmount_jettonAmount_jetton_virtualTonReserve_virtualTokenReserve_trader_isBuy_balance(($outputData'amountOut + $outputData'tax), $sell'jettonAmount, my_address(), $self'virtualTonReserve, $self'virtualTokenReserve, $sell'trader, false, ($currentBalance - $sell'jettonAmount))));
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), ());
+}
+
+(((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice)), ()) $BondingCurve$_internal_binary_ClaimToken((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, (slice) $claim) impure inline {
+    var ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress) = $self;
+    var ($claim'owner) = $claim;
+    throw_unless(35772, $self'liquidityAdded);
+    slice $owner = $claim'owner;
+    var ($senderJettonWalletInit'code, $senderJettonWalletInit'data) = ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)~$BondingCurve$_fun_getJettonWalletInit($owner);
+    slice $senderJettonWalletAddress = $global_contractAddress(($senderJettonWalletInit'code, $senderJettonWalletInit'data));
+    throw_unless(34036, (~ null?(__tact_dict_get_slice_int($self'balances, 267, $owner, 257))));
+    int $balance = __tact_not_null(__tact_dict_get_slice_int($self'balances, 267, $owner, 257));
+    $self'balances~__tact_dict_set_slice_int(267, $owner, null(), 257);
+    throw_unless(5306, ($Context$_get_value(__tact_context_get()) >= 100000000));
+    $global_send($SendParameters$_constructor_to_value_bounce_mode_body($self'myJettonWalletAddress, ($Context$_get_value(__tact_context_get()) - 20000000), false, 3, $TokenTransfer$_store_cell($TokenTransfer$_constructor_query_id_amount_destination_response_destination_custom_payload_forward_ton_amount_forward_payload(0, $balance, $owner, __tact_context_get_sender(), null(), 10000000, $global_emptySlice()))));
+    $global_emit($ClaimEvent$_store_cell($ClaimEvent$_constructor_jetton_user_balance(my_address(), $owner, $balance)));
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), ());
+}
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), ()) $BondingCurve$_internal_text_92214b118d495a0fe7958b6255ef36f016cb803b28b252edeb0209d5d61d528f((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self) impure inline {
+    var ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress) = $self;
+    throw_unless(17598, $self'complete);
+    throw_unless(35772, (~ $self'liquidityAdded));
+    $self'liquidityAdded = true;
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), ());
+}
+
+(((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice)), ()) $BondingCurve$_internal_binary_TokenNotification((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, (int, int, slice, slice) $stake) impure inline {
+    var ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress) = $self;
+    var ($stake'query_id, $stake'amount, $stake'from, $stake'forward_payload) = $stake;
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), ());
+}
+
+(((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice)), ()) $BondingCurve$_internal_binary_TokenBurnNotification((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, (int, int, slice, slice) $msg) impure inline {
+    var ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress) = $self;
+    var ($msg'query_id, $msg'amount, $msg'sender, $msg'response_destination) = $msg;
+    ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress)~$BondingCurve$_fun_requireSenderAsWalletOwner(__tact_not_null($msg'response_destination));
+    $self'total_supply = ($self'total_supply - $msg'amount);
+    if ((~ null?($msg'response_destination))) {
+        $global_send($SendParameters$_constructor_to_value_bounce_mode_body(__tact_not_null($msg'response_destination), 0, false, 64, $TokenExcesses$_store_cell($TokenExcesses$_constructor_query_id($msg'query_id))));
+    }
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), ());
+}
+
+(((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice)), ()) $BondingCurve$_internal_binary_ProvideWalletAddress((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) $self, (int, slice, int) $msg) impure inline {
+    var ($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress) = $self;
+    var ($msg'query_id, $msg'owner_address, $msg'include_address) = $msg;
+    throw_unless(23951, ($Context$_get_value(__tact_context_get()) >= 6100000));
+    var ($init'code, $init'data) = $JettonDefaultWallet$_init_child(__tact_context_sys, my_address(), $msg'owner_address);
+    if ($msg'include_address) {
+        $global_send($SendParameters$_constructor_to_value_mode_body(__tact_context_get_sender(), 0, 64, $TakeWalletAddress$_store_cell($TakeWalletAddress$_constructor_query_id_wallet_address_owner_address($msg'query_id, $global_contractAddress(($init'code, $init'data)), $Cell$_fun_asSlice(end_cell(__tact_store_address(__tact_store_bool(begin_cell(), true), $msg'owner_address)))))));
+    } else {
+        $global_send($SendParameters$_constructor_to_value_mode_body(__tact_context_get_sender(), 0, 64, $TakeWalletAddress$_store_cell($TakeWalletAddress$_constructor_query_id_wallet_address_owner_address($msg'query_id, $global_contractAddress(($init'code, $init'data)), $Cell$_fun_asSlice(end_cell(__tact_store_bool(begin_cell(), false)))))));
+    }
+    return (($self'total_supply, $self'owner, $self'content, $self'mintable, $self'max_supply, $self'balances, $self'virtualTonReserve, $self'virtualTokenReserve, $self'complete, $self'liquidityAdded, $self'factory, $self'jettonCreator, $self'tokenDebt, $self'myJettonWalletAddress), ());
+}
+
+;;
+;; Get methods of a Contract BondingCurve
+;;
+
+_ %balance() method_id(104128) {
+    var self = $BondingCurve$_contract_load();
+    var res = self~$BondingCurve$_fun_balance();
+    return res;
+}
+
+_ %bondingCurveData() method_id(76673) {
+    var self = $BondingCurve$_contract_load();
+    var res = self~$BondingCurve$_fun_bondingCurveData();
+    return $BondingCurveData$_to_external(res);
+}
+
+_ %outputTokenAmount(int $inputTonAmount) method_id(102555) {
+    int $inputTonAmount = $inputTonAmount;
+    var self = $BondingCurve$_contract_load();
+    var res = self~$BondingCurve$_fun_outputTokenAmount($inputTonAmount);
+    return $OutputTokenAmountReturn$_to_external(res);
+}
+
+_ %outputTonAmount(int $inputTokenAmount) method_id(83057) {
+    int $inputTokenAmount = $inputTokenAmount;
+    var self = $BondingCurve$_contract_load();
+    var res = self~$BondingCurve$_fun_outputTonAmount($inputTokenAmount);
+    return $OutputTonAmountReturn$_to_external(res);
+}
+
+_ %boughtBalance(slice $address) method_id(110209) {
+    slice $address = __tact_verify_address($address);
+    var self = $BondingCurve$_contract_load();
+    var res = self~$BondingCurve$_fun_boughtBalance($address);
+    return res;
+}
+
+_ %get_jetton_data() method_id(106029) {
+    var self = $BondingCurve$_contract_load();
+    var res = self~$BondingCurve$_fun_get_jetton_data();
+    return $JettonData$_to_external(res);
+}
+
+_ %get_wallet_address(slice $owner) method_id(103289) {
+    slice $owner = __tact_verify_address($owner);
+    var self = $BondingCurve$_contract_load();
+    var res = self~$BondingCurve$_fun_get_wallet_address($owner);
+    return res;
+}
+
+_ %owner() method_id(83229) {
+    var self = $BondingCurve$_contract_load();
+    var res = self~$BondingCurve$_fun_owner();
+    return res;
+}
+
+_ lazy_deployment_completed() method_id {
+    return get_data().begin_parse().load_int(1);
+}
+
+;;
+;; Routing of a Contract BondingCurve
+;;
+
+((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice), int) $BondingCurve$_contract_router_internal((int, slice, cell, int, int, cell, int, int, int, int, slice, slice, int, slice) self, int msg_bounced, slice in_msg) impure inline_ref {
+    ;; Handle bounced messages
+    if (msg_bounced) {
+        return (self, true);
+    }
+    
+    ;; Parse incoming message
+    int op = 0;
+    if (slice_bits(in_msg) >= 32) {
+        op = in_msg.preload_uint(32);
+    }
+    
+    
+    ;; Receive Mint message
+    if (op == 2309184031) {
+        var msg = in_msg~$Mint$_load();
+        self~$BondingCurve$_internal_binary_Mint(msg);
+        return (self, true);
+    }
+    
+    ;; Receive Buy message
+    if (op == 2901976294) {
+        var msg = in_msg~$Buy$_load();
+        self~$BondingCurve$_internal_binary_Buy(msg);
+        return (self, true);
+    }
+    
+    ;; Receive Sell message
+    if (op == 996885798) {
+        var msg = in_msg~$Sell$_load();
+        self~$BondingCurve$_internal_binary_Sell(msg);
+        return (self, true);
+    }
+    
+    ;; Receive ClaimToken message
+    if (op == 3448293312) {
+        var msg = in_msg~$ClaimToken$_load();
+        self~$BondingCurve$_internal_binary_ClaimToken(msg);
+        return (self, true);
+    }
+    
+    ;; Receive TokenNotification message
+    if (op == 1935855772) {
+        var msg = in_msg~$TokenNotification$_load();
+        self~$BondingCurve$_internal_binary_TokenNotification(msg);
+        return (self, true);
+    }
+    
+    ;; Receive TokenBurnNotification message
+    if (op == 2078119902) {
+        var msg = in_msg~$TokenBurnNotification$_load();
+        self~$BondingCurve$_internal_binary_TokenBurnNotification(msg);
+        return (self, true);
+    }
+    
+    ;; Receive ProvideWalletAddress message
+    if (op == 745978227) {
+        var msg = in_msg~$ProvideWalletAddress$_load();
+        self~$BondingCurve$_internal_binary_ProvideWalletAddress(msg);
+        return (self, true);
+    }
+    
+    ;; Text Receivers
+    if (op == 0) {
+        var text_op = slice_hash(in_msg);
+        
+        ;; Receive "AddLiquidity" message
+        if (text_op == 0x92214b118d495a0fe7958b6255ef36f016cb803b28b252edeb0209d5d61d528f) {
+            self~$BondingCurve$_internal_text_92214b118d495a0fe7958b6255ef36f016cb803b28b252edeb0209d5d61d528f();
+            return (self, true);
+        }
+    }
+    
+    return (self, false);
+}
+
+() recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
+    
+    ;; Context
+    var cs = in_msg_cell.begin_parse();
+    var msg_flags = cs~load_uint(4);
+    var msg_bounced = -(msg_flags & 1);
+    slice msg_sender_addr = __tact_verify_address(cs~load_msg_addr());
+    __tact_context = (msg_bounced, msg_sender_addr, msg_value, cs);
+    __tact_context_sender = msg_sender_addr;
+    
+    ;; Load contract data
+    var self = $BondingCurve$_contract_load();
+    
+    ;; Handle operation
+    int handled = self~$BondingCurve$_contract_router_internal(msg_bounced, in_msg);
+    
+    ;; Throw if not handled
+    throw_unless(130, handled);
+    
+    ;; Persist state
+    $BondingCurve$_contract_store(self);
+}

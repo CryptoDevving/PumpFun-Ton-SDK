@@ -1,0 +1,13 @@
+export type Network = 'Mainnet' | 'Devnet';
+export const CONFIG_INFO_SEED = 'config_info_seed';
+export const BONDING_CURVE_SEED = 'bonding_curve_seed';
+export const REFERRAL_SEED = 'referral_seed';
+export const BONDING_CURVE_FEE_BIPS = 100;
+export const PRECISION = 10000;
+export const DECIMALS = 6;
+export const TOTAL_SUPPLY = '420000000000000000';
+export const VIRTUAL_TOKEN_RESERVE_WHEN_ADD_LIQUIDITY = '117550000000000000';
+export const INITIAL_VIRTUAL_TOKEN_RESERVE = '450660000000000000';
+export const INITIAL_VIRTUAL_SOL_RESERVE = 29000000000;
+export const FEE_BIPS_FOR_CREATOR = 1000;
+export const DEX_FEE_BIPS = 25;

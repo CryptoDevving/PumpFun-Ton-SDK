@@ -1,0 +1,303 @@
+;;
+;; Type: StateInit
+;; TLB: _ code:^cell data:^cell = StateInit
+;;
+
+((cell, cell)) $StateInit$_not_null(tuple v) inline {
+    throw_if(128, null?(v));
+    var (cell vvv'code, cell vvv'data) = __tact_tuple_destroy_2(v);
+    return (vvv'code, vvv'data);
+}
+
+tuple $StateInit$_to_tuple(((cell, cell)) v) inline {
+    var (v'code, v'data) = v;
+    return __tact_tuple_create_2(v'code, v'data);
+}
+
+tuple $StateInit$_to_external(((cell, cell)) v) inline {
+    var (v'code, v'data) = v; 
+    return $StateInit$_to_tuple(v'code, v'data);
+}
+
+;;
+;; Type: SendParameters
+;; TLB: _ bounce:bool to:address value:int257 mode:int257 body:Maybe ^cell code:Maybe ^cell data:Maybe ^cell = SendParameters
+;;
+
+((int, slice, int, int, cell, cell, cell)) $SendParameters$_constructor_bounce_to_value_mode_body_code_data(int $bounce, slice $to, int $value, int $mode, cell $body, cell $code, cell $data) inline {
+    return ($bounce, $to, $value, $mode, $body, $code, $data);
+}
+
+((int, slice, int, int, cell, cell, cell)) $SendParameters$_constructor_to_value_mode_code_data_body(slice $to, int $value, int $mode, cell $code, cell $data, cell $body) inline {
+    return (true, $to, $value, $mode, $body, $code, $data);
+}
+
+((int, slice, int, int, cell, cell, cell)) $SendParameters$_constructor_to_value_mode_body(slice $to, int $value, int $mode, cell $body) inline {
+    return (true, $to, $value, $mode, $body, null(), null());
+}
+
+;;
+;; Type: Deploy
+;; Header: 0x946a98b6
+;; TLB: deploy#946a98b6 queryId:uint64 = Deploy
+;;
+
+(slice, ((int))) $Deploy$_load(slice sc_0) inline {
+    throw_unless(129, sc_0~load_uint(32) == 2490013878);
+    var v'queryId = sc_0~load_uint(64);
+    return (sc_0, (v'queryId));
+}
+
+;;
+;; Type: DeployOk
+;; Header: 0xaff90f57
+;; TLB: deploy_ok#aff90f57 queryId:uint64 = DeployOk
+;;
+
+builder $DeployOk$_store(builder build_0, (int) v) inline {
+    var (v'queryId) = v;
+    build_0 = store_uint(build_0, 2952335191, 32);
+    build_0 = build_0.store_uint(v'queryId, 64);
+    return build_0;
+}
+
+cell $DeployOk$_store_cell((int) v) inline {
+    return $DeployOk$_store(begin_cell(), v).end_cell();
+}
+
+((int)) $DeployOk$_constructor_queryId(int $queryId) inline {
+    return ($queryId);
+}
+
+;;
+;; Type: Mint
+;; Header: 0x89a35a1f
+;; TLB: mint#89a35a1f  = Mint
+;;
+
+builder $Mint$_store(builder build_0, tuple v) inline {
+    build_0 = store_uint(build_0, 2309184031, 32);
+    return build_0;
+}
+
+cell $Mint$_store_cell(tuple v) inline {
+    return $Mint$_store(begin_cell(), v).end_cell();
+}
+
+(tuple) $Mint$_constructor_() inline {
+    return empty_tuple();
+}
+
+;;
+;; Type: Buy
+;; Header: 0xacf8a4e6
+;; TLB: buy#acf8a4e6 tonAmount:int257 minOut:int257 referrer:address referrerDl1:address referrerDl2:address treasury:address trader:address = Buy
+;;
+
+builder $Buy$_store(builder build_0, (int, int, slice, slice, slice, slice, slice) v) inline_ref {
+    var (v'tonAmount, v'minOut, v'referrer, v'referrerDl1, v'referrerDl2, v'treasury, v'trader) = v;
+    build_0 = store_uint(build_0, 2901976294, 32);
+    build_0 = build_0.store_int(v'tonAmount, 257);
+    build_0 = build_0.store_int(v'minOut, 257);
+    build_0 = __tact_store_address(build_0, v'referrer);
+    var build_1 = begin_cell();
+    build_1 = __tact_store_address(build_1, v'referrerDl1);
+    build_1 = __tact_store_address(build_1, v'referrerDl2);
+    build_1 = __tact_store_address(build_1, v'treasury);
+    var build_2 = begin_cell();
+    build_2 = __tact_store_address(build_2, v'trader);
+    build_1 = store_ref(build_1, build_2.end_cell());
+    build_0 = store_ref(build_0, build_1.end_cell());
+    return build_0;
+}
+
+cell $Buy$_store_cell((int, int, slice, slice, slice, slice, slice) v) inline {
+    return $Buy$_store(begin_cell(), v).end_cell();
+}
+
+((int, int, slice, slice, slice, slice, slice)) $Buy$_constructor_tonAmount_minOut_referrer_referrerDl1_referrerDl2_treasury_trader(int $tonAmount, int $minOut, slice $referrer, slice $referrerDl1, slice $referrerDl2, slice $treasury, slice $trader) inline {
+    return ($tonAmount, $minOut, $referrer, $referrerDl1, $referrerDl2, $treasury, $trader);
+}
+
+;;
+;; Type: BuyCall
+;; Header: 0xacd2a5b1
+;; TLB: buy_call#acd2a5b1 tonAmount:int257 minOut:int257 referrer:address jetton:address = BuyCall
+;;
+
+(slice, ((int, int, slice, slice))) $BuyCall$_load(slice sc_0) inline {
+    throw_unless(129, sc_0~load_uint(32) == 2899486129);
+    var v'tonAmount = sc_0~load_int(257);
+    var v'minOut = sc_0~load_int(257);
+    var v'referrer = sc_0~__tact_load_address();
+    slice sc_1 = sc_0~load_ref().begin_parse();
+    var v'jetton = sc_1~__tact_load_address();
+    return (sc_0, (v'tonAmount, v'minOut, v'referrer, v'jetton));
+}
+
+;;
+;; Type: SellCall
+;; Header: 0xe5363368
+;; TLB: sell_call#e5363368 referrer:address jetton:address jettonAmount:int257 minTonOut:int257 = SellCall
+;;
+
+(slice, ((slice, slice, int, int))) $SellCall$_load(slice sc_0) inline {
+    throw_unless(129, sc_0~load_uint(32) == 3845534568);
+    var v'referrer = sc_0~__tact_load_address();
+    var v'jetton = sc_0~__tact_load_address();
+    var v'jettonAmount = sc_0~load_int(257);
+    slice sc_1 = sc_0~load_ref().begin_parse();
+    var v'minTonOut = sc_1~load_int(257);
+    return (sc_0, (v'referrer, v'jetton, v'jettonAmount, v'minTonOut));
+}
+
+;;
+;; Type: Sell
+;; Header: 0x3b6b4526
+;; TLB: sell#3b6b4526 referrerDl1:address referrerDl2:address treasury:address trader:address jettonAmount:int257 minTonOut:int257 referrer:address = Sell
+;;
+
+builder $Sell$_store(builder build_0, (slice, slice, slice, slice, int, int, slice) v) inline_ref {
+    var (v'referrerDl1, v'referrerDl2, v'treasury, v'trader, v'jettonAmount, v'minTonOut, v'referrer) = v;
+    build_0 = store_uint(build_0, 996885798, 32);
+    build_0 = __tact_store_address(build_0, v'referrerDl1);
+    build_0 = __tact_store_address(build_0, v'referrerDl2);
+    build_0 = __tact_store_address(build_0, v'treasury);
+    var build_1 = begin_cell();
+    build_1 = __tact_store_address(build_1, v'trader);
+    build_1 = build_1.store_int(v'jettonAmount, 257);
+    build_1 = build_1.store_int(v'minTonOut, 257);
+    var build_2 = begin_cell();
+    build_2 = __tact_store_address(build_2, v'referrer);
+    build_1 = store_ref(build_1, build_2.end_cell());
+    build_0 = store_ref(build_0, build_1.end_cell());
+    return build_0;
+}
+
+cell $Sell$_store_cell((slice, slice, slice, slice, int, int, slice) v) inline {
+    return $Sell$_store(begin_cell(), v).end_cell();
+}
+
+((slice, slice, slice, slice, int, int, slice)) $Sell$_constructor_jettonAmount_minTonOut_referrer_referrerDl1_referrerDl2_treasury_trader(int $jettonAmount, int $minTonOut, slice $referrer, slice $referrerDl1, slice $referrerDl2, slice $treasury, slice $trader) inline {
+    return ($referrerDl1, $referrerDl2, $treasury, $trader, $jettonAmount, $minTonOut, $referrer);
+}
+
+;;
+;; Type: CreateEvent
+;; Header: 0xcc0fe28d
+;; TLB: create_event#cc0fe28d content:^cell jetton:address creator:address = CreateEvent
+;;
+
+builder $CreateEvent$_store(builder build_0, (cell, slice, slice) v) inline {
+    var (v'content, v'jetton, v'creator) = v;
+    build_0 = store_uint(build_0, 3423593101, 32);
+    build_0 = build_0.store_ref(v'content);
+    build_0 = __tact_store_address(build_0, v'jetton);
+    build_0 = __tact_store_address(build_0, v'creator);
+    return build_0;
+}
+
+cell $CreateEvent$_store_cell((cell, slice, slice) v) inline {
+    return $CreateEvent$_store(begin_cell(), v).end_cell();
+}
+
+((cell, slice, slice)) $CreateEvent$_constructor_content_jetton_creator(cell $content, slice $jetton, slice $creator) inline {
+    return ($content, $jetton, $creator);
+}
+
+;;
+;; Type: DeployCurveParams
+;; Header: 0x00531283
+;; TLB: deploy_curve_params#00531283 content:^cell = DeployCurveParams
+;;
+
+(slice, ((cell))) $DeployCurveParams$_load(slice sc_0) inline {
+    throw_unless(129, sc_0~load_uint(32) == 5444227);
+    var v'content = sc_0~load_ref();
+    return (sc_0, (v'content));
+}
+
+;;
+;; Type: BondingCurve
+;;
+
+builder $BondingCurve$init$_store(builder build_0, (slice, cell) v) inline {
+    var (v'jettonCreator, v'content) = v;
+    build_0 = __tact_store_address(build_0, v'jettonCreator);
+    build_0 = build_0.store_ref(v'content);
+    return build_0;
+}
+
+(cell, cell) $BondingCurve$_init_child(cell sys', slice $jettonCreator, cell $content) inline_ref {
+    slice sc' = sys'.begin_parse();
+    cell source = sc'~load_dict();
+    cell contracts = new_dict();
+    
+    ;; Contract Code: BondingCurve
+    cell mine = __tact_dict_get_code(source, 17275);
+    contracts = __tact_dict_set_code(contracts, 17275, mine);
+    
+    ;; Contract Code: JettonDefaultWallet
+    cell code_55471 = __tact_dict_get_code(source, 55471);
+    contracts = __tact_dict_set_code(contracts, 55471, code_55471);
+    
+    ;; Contract Code: Factory
+    cell code_12068 = __tact_dict_get_code(source, 12068);
+    contracts = __tact_dict_set_code(contracts, 12068, code_12068);
+    
+    ;; Build cell
+    builder b = begin_cell();
+    b = b.store_ref(begin_cell().store_dict(contracts).end_cell());
+    b = b.store_int(false, 1);
+    b = $BondingCurve$init$_store(b, ($jettonCreator, $content));
+    return (mine, b.end_cell());
+}
+
+;;
+;; Type: Factory
+;;
+
+builder $Factory$_store(builder build_0, (slice, slice, cell, int) v) inline {
+    var (v'deployer, v'treasury, v'referrals, v'referralsCount) = v;
+    build_0 = __tact_store_address(build_0, v'deployer);
+    build_0 = __tact_store_address(build_0, v'treasury);
+    build_0 = build_0.store_dict(v'referrals);
+    build_0 = build_0.store_int(v'referralsCount, 257);
+    return build_0;
+}
+
+(slice, ((slice, slice, cell, int))) $Factory$_load(slice sc_0) inline {
+    var v'deployer = sc_0~__tact_load_address();
+    var v'treasury = sc_0~__tact_load_address();
+    var v'referrals = sc_0~load_dict();
+    var v'referralsCount = sc_0~load_int(257);
+    return (sc_0, (v'deployer, v'treasury, v'referrals, v'referralsCount));
+}
+
+(slice, ((slice))) $Factory$init$_load(slice sc_0) inline {
+    var v'treasury = sc_0~__tact_load_address();
+    return (sc_0, (v'treasury));
+}
+
+(slice, slice, cell, int) $Factory$_contract_load() impure inline_ref {
+    slice $sc = get_data().begin_parse();
+    __tact_context_sys = $sc~load_ref();
+    int $loaded = $sc~load_int(1);
+    if ($loaded) {
+        return $sc~$Factory$_load();
+    } else {
+        ;; Allow only workchain deployments
+        throw_unless(137, my_address().preload_uint(11) == 1024);
+        (slice $treasury) = $sc~$Factory$init$_load();
+        $sc.end_parse();
+        return $Factory$_contract_init($treasury);
+    }
+}
+
+() $Factory$_contract_store((slice, slice, cell, int) v) impure inline {
+    builder b = begin_cell();
+    b = b.store_ref(__tact_context_sys);
+    b = b.store_int(true, 1);
+    b = $Factory$_store(b, v);
+    set_data(b.end_cell());
+}
